@@ -11,14 +11,9 @@
             background: #f0f0f0; 
             margin: auto; 
         }
-        #dimensionCounter {
+        #dimensionCounter, #controls {
             text-align: center;
             font-size: 18px;
-            margin-top: 20px;
-        }
-        #controls {
-            text-align: center;
-            font-size: 16px;
             margin-top: 20px;
         }
     </style>
@@ -27,9 +22,11 @@
     <canvas id="gameCanvas" width="400" height="400" tabindex="0"></canvas>
     <div id="dimensionCounter">Canvas Dimensions: 20x20 Blocks</div>
     <div id="controls">
-        <strong>Controls:</strong><br>
-        Arrow Keys: Move Brush &nbsp; | &nbsp; <strong>P:</strong> Paint &nbsp; | &nbsp; <strong>B:</strong> Cycle Colors<br>
-        <strong>E:</strong> Toggle Eraser &nbsp; | &nbsp; <strong>R:</strong> Reset Canvas &nbsp; | &nbsp; <strong>+/-:</strong> Change Grid Size
+        <p><strong>Controls:</strong></p>
+        <p>
+            Move: Arrow Keys | Paint: Space Bar | Change Color: B | Toggle Eraser: E | Reset Canvas: R<br>
+            Increase Grid Size: + | Decrease Grid Size: -
+        </p>
     </div>
 
     <script>
@@ -48,7 +45,9 @@
             '#800080', // Purple
             '#FF1493', // Pink
             '#FFA500', // Orange
-            '#00FFFF'  // Cyan
+            '#00FFFF', // Cyan
+            '#000000', // Black
+            '#FFFFFF'  // White
         ]; 
         let currentColorIndex = 0; // Index to track current color
         let paintColor = colors[currentColorIndex]; // Default color
@@ -70,8 +69,9 @@
 
         // Add keyboard event listener
         window.addEventListener('keydown', (e) => {
-            // Handle painting with 'P' key
-            if (e.key === 'p' || e.key === 'P') {
+            // Handle painting with Space Bar
+            if (e.key === ' ') {
+                e.preventDefault(); // Prevent default space bar behavior (e.g., scrolling)
                 if (eraserMode) {
                     // "Erase" the current block by setting it to the background color
                     const index = paintedPositions.findIndex(pos => pos.x === x && pos.y === y);
@@ -88,7 +88,7 @@
 
             // Handle color toggle with 'B' key
             if (e.key === 'b' || e.key === 'B') {
-                currentColorIndex = (currentColorIndex + 1) % colors.length; // Cycle through colors (1 to 8)
+                currentColorIndex = (currentColorIndex + 1) % colors.length; // Cycle through colors (1 to 10)
                 paintColor = colors[currentColorIndex]; // Set the new color
                 if (eraserMode) paintColor = backgroundColor; // Set paint color to background when eraser is active
             }
