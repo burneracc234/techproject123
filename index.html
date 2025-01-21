@@ -16,11 +16,21 @@
             font-size: 18px;
             margin-top: 20px;
         }
+        #controls {
+            text-align: center;
+            font-size: 16px;
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
     <canvas id="gameCanvas" width="400" height="400" tabindex="0"></canvas>
     <div id="dimensionCounter">Canvas Dimensions: 20x20 Blocks</div>
+    <div id="controls">
+        <strong>Controls:</strong><br>
+        Arrow Keys: Move Brush &nbsp; | &nbsp; <strong>P:</strong> Paint &nbsp; | &nbsp; <strong>B:</strong> Cycle Colors<br>
+        <strong>E:</strong> Toggle Eraser &nbsp; | &nbsp; <strong>R:</strong> Reset Canvas &nbsp; | &nbsp; <strong>+/-:</strong> Change Grid Size
+    </div>
 
     <script>
         const canvas = document.getElementById('gameCanvas');
