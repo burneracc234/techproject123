@@ -1,20 +1,173 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport", content="width=device-width, initial-scale=1.0">
-        <title>Snake</title>
-        <link rel="stylesheet" href ="snake.css">
-        <script src="working.js"></script>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pixel Art Game</title>
+    <style>
+        body { margin: 0; font-family: Arial, sans-serif; }
+        canvas { 
+            display: block; 
+            background: #f0f0f0; 
+            margin: auto; 
+        }
+        #dimensionCounter {
+            text-align: center;
+            font-size: 18px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="400" height="400" tabindex="0"></canvas>
+    <div id="dimensionCounter">Canvas Dimensions: 20x20 Blocks</div>
 
-        
-        </head>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
 
-    <body >
-        
-        
-        <h1>Snake </h1>
-        <canvas id="board"></canvas>
-        
-    </body>
-</html> 
+        let gridSize = 20; // Default grid size
+        const blockSize = canvas.width / gridSize; // Size of each block
+        let x = 0, y = 0; // Starting position of the paintbrush
+        let paintedPositions = []; // Array to store painted positions
+        const colors = [
+            '#FF5733', // Red
+            '#0000FF', // Blue
+            '#00FF00', // Green
+            '#FFFF00', // Yellow
+            '#800080', // Purple
+            '#FF1493', // Pink
+            '#FFA500', // Orange
+            '#00FFFF'  // Cyan
+        ]; 
+        let currentColorIndex = 0; // Index to track current color
+        let paintColor = colors[currentColorIndex]; // Default color
+        const backgroundColor = '#f0f0f0'; // Background color (for eraser)
+        let eraserMode = false; // Track whether eraser is active
+
+        // Update the dimension counter text
+        function updateDimensionCounter() {
+            const dimensionText = `Canvas Dimensions: ${gridSize}x${gridSize} Blocks`;
+            document.getElementById('dimensionCounter').textContent = dimensionText;
+        }
+
+        // Reset the canvas state on grid size change
+        function resetCanvasState() {
+            paintedPositions = []; // Clear painted positions
+            x = 0; // Reset x position of the paintbrush
+            y = 0; // Reset y position of the paintbrush
+        }
+
+        // Add keyboard event listener
+        window.addEventListener('keydown', (e) => {
+            // Handle painting with 'P' key
+            if (e.key === 'p' || e.key === 'P') {
+                if (eraserMode) {
+                    // "Erase" the current block by setting it to the background color
+                    const index = paintedPositions.findIndex(pos => pos.x === x && pos.y === y);
+                    if (index !== -1) {
+                        paintedPositions.splice(index, 1); // Remove the painted position at (x, y)
+                    }
+                } else {
+                    // Only paint if the block is not already painted in the current color
+                    if (!paintedPositions.some(pos => pos.x === x && pos.y === y && pos.color === paintColor)) {
+                        paintedPositions.push({ x, y, color: paintColor }); // Save position with current color
+                    }
+                }
+            }
+
+            // Handle color toggle with 'B' key
+            if (e.key === 'b' || e.key === 'B') {
+                currentColorIndex = (currentColorIndex + 1) % colors.length; // Cycle through colors (1 to 8)
+                paintColor = colors[currentColorIndex]; // Set the new color
+                if (eraserMode) paintColor = backgroundColor; // Set paint color to background when eraser is active
+            }
+
+            // Handle movement with arrow keys
+            if (e.key === 'ArrowUp' && y > 0) y -= 1; // Move up one block
+            if (e.key === 'ArrowDown' && y < gridSize - 1) y += 1; // Move down one block
+            if (e.key === 'ArrowLeft' && x > 0) x -= 1; // Move left one block
+            if (e.key === 'ArrowRight' && x < gridSize - 1) x += 1; // Move right one block
+
+            // Increase grid size with '+' or '=' key
+            if ((e.key === '+' || e.key === '=') && gridSize < 50) {
+                changeGridSize(gridSize + 1); // Increase grid size
+            }
+
+            // Decrease grid size with '-' key
+            if (e.key === '-' && gridSize > 5) {
+                changeGridSize(gridSize - 1); // Decrease grid size
+            }
+
+            // Reset the canvas with 'R' key
+            if (e.key === 'r' || e.key === 'R') {
+                resetCanvasState(); // Clear all painted positions
+                update(); // Re-render canvas with the reset state
+            }
+
+            // Toggle eraser mode with 'E' key
+            if (e.key === 'e' || e.key === 'E') {
+                eraserMode = !eraserMode; // Toggle eraser mode
+                if (eraserMode) {
+                    paintColor = backgroundColor; // Set paint color to background for eraser
+                } else {
+                    paintColor = colors[currentColorIndex]; // Revert paint color to the selected color
+                }
+            }
+        });
+
+        // Function to change grid size dynamically
+        function changeGridSize(newSize) {
+            // Ensure grid size stays between 5 and 50
+            if (newSize >= 5 && newSize <= 50) {
+                gridSize = newSize;
+                canvas.width = newSize * 20; // Update the canvas width based on new grid size
+                canvas.height = newSize * 20; // Update the canvas height based on new grid size
+                resetCanvasState(); // Reset the canvas state (clear painted positions, reset brush)
+                updateDimensionCounter(); // Update the dimension counter text
+            }
+        }
+
+        // Draw the grid and painted positions
+        function draw() {
+            // Clear the canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Calculate the size of each block based on grid size
+            const blockSize = canvas.width / gridSize;
+
+            // Draw the grid
+            ctx.strokeStyle = '#ddd';
+            for (let i = 0; i <= gridSize; i++) {
+                ctx.beginPath();
+                ctx.moveTo(i * blockSize, 0);
+                ctx.lineTo(i * blockSize, canvas.height);
+                ctx.moveTo(0, i * blockSize);
+                ctx.lineTo(canvas.width, i * blockSize);
+                ctx.stroke();
+            }
+
+            // Draw the painted positions
+            paintedPositions.forEach(pos => {
+                ctx.fillStyle = pos.color;
+                ctx.fillRect(pos.x * blockSize, pos.y * blockSize, blockSize, blockSize);
+            });
+
+            // Draw the current paintbrush (square)
+            ctx.fillStyle = paintColor;
+            ctx.strokeStyle = '#000'; // Black border for the brush
+            ctx.lineWidth = 2;
+            ctx.fillRect(x * blockSize, y * blockSize, blockSize, blockSize);
+            ctx.strokeRect(x * blockSize, y * blockSize, blockSize, blockSize);
+        }
+
+        function update() {
+            draw();
+            requestAnimationFrame(update); // Call update recursively for animation
+        }
+
+        updateDimensionCounter(); // Initial dimension update
+        update(); // Start the game loop
+    </script>
+</body>
+</html>
